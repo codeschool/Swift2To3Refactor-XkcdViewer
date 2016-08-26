@@ -19,7 +19,7 @@ struct Comic {
     var month: Int
     var year: Int
     
-    var link: NSURL
+    var link: URL
 
     var news: String
     var transcript: String
@@ -33,7 +33,7 @@ struct Comic {
         self.day = Int(jsonData["day"] as! String)!
         self.month = Int(jsonData["month"] as! String)!
         self.year = Int(jsonData["year"] as! String)!
-        self.link = NSURL(string: "\(jsonData["link"])")!
+        self.link = URL(string: "\(jsonData["link"])")!
         self.news = jsonData["news"] as! String
         self.transcript = jsonData["transcript"] as! String
     }

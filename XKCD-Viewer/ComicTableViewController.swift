@@ -11,7 +11,7 @@ import UIKit
 class ComicTableViewController: UITableViewController {
 
     var comics: [Int] = []
-    let session = NSURLSession.sharedSession()
+    let session = URLSession.shared
     
     // MARK: - View Controller Lifecycle
 
@@ -19,7 +19,7 @@ class ComicTableViewController: UITableViewController {
         super.viewDidLoad()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         makeRequest("https://xkcd.com/info.0.json", completionHandler: {(response) in
@@ -29,9 +29,9 @@ class ComicTableViewController: UITableViewController {
                 self.comics.append(i)
             }
             
-            self.comics = self.comics.reverse()
+            self.comics = self.comics.reversed()
             
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
 
@@ -40,12 +40,12 @@ class ComicTableViewController: UITableViewController {
     
     // MARK: - Table view data source
 
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return comics.count
     }
 
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("ComicCell", forIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ComicCell", for: indexPath)
 
         let comicNum = comics[indexPath.row]
         
@@ -54,25 +54,25 @@ class ComicTableViewController: UITableViewController {
         return cell
     }
     
-    func configureCell(cell: UITableViewCell, comicNum: Int) -> Void {
+    func configureCell(_ cell: UITableViewCell, comicNum: Int) -> Void {
         cell.textLabel?.text = "\(comicNum)"
     }
     
     // MARK: - Table View Delegate
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     
     // MARK: - Network Helpers
     
-    func makeRequest(urlString: String, completionHandler:([String: AnyObject]) -> ()) -> Void {
-        guard let url = NSURL(string: urlString) else {
+    func makeRequest(_ urlString: String, completionHandler:@escaping ([String: AnyObject]) -> ()) -> Void {
+        guard let url = URL(string: urlString) else {
             print("Bad URL")
             return
         }
         
-        session.dataTaskWithURL(url) { (data, response, error) in
+        session.dataTask(with: url) { (data, response, error) in
             if error != nil {
                 print(error?.localizedDescription)
             }
@@ -82,7 +82,7 @@ class ComicTableViewController: UITableViewController {
             }
             
             do {
-                let json = try NSJSONSerialization.JSONObjectWithData(data, options: []) as! [String:AnyObject]
+                let json = try JSONSerialization.jsonObject(with: data, options: []) as! [String:AnyObject]
                 completionHandler(json)
                 
             } catch {
@@ -94,12 +94,12 @@ class ComicTableViewController: UITableViewController {
     
     // MARK: - Navigation
 
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if(segue.identifier == "ShowComic") {
-            let comicVC = segue.destinationViewController as? ComicViewController
+            let comicVC = segue.destination as? ComicViewController
             
             guard let cell = sender as? UITableViewCell,
-                let indexPath = tableView.indexPathForCell(cell) else {
+                let indexPath = tableView.indexPath(for: cell) else {
                     return
             }
             
@@ -107,7 +107,7 @@ class ComicTableViewController: UITableViewController {
 
             makeRequest("https://xkcd.com/\(comicNum)/info.0.json") { (response) in
                 print(response)
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     comicVC?.comic = Comic(jsonData: response)
                 }
             }

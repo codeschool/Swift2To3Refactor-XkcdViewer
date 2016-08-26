@@ -18,26 +18,26 @@ class ComicViewController: UIViewController, UIGestureRecognizerDelegate {
   
     // MARK: - View Controller Lifecycle
 
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        comicImageView.hidden = true
-        comicTitleLabel.hidden = true
+        comicImageView.isHidden = true
+        comicTitleLabel.isHidden = true
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
         if let image = comic?.img {
-            if let url = NSURL(string: image) {
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
-                    if let data = NSData(contentsOfURL: url) {
-                        dispatch_async(dispatch_get_main_queue()) {
+            if let url = URL(string: image) {
+                DispatchQueue.global(qos: .background).async {
+                    if let data = try? Data(contentsOf: url) {
+                        DispatchQueue.main.async {
                             self.comicImageView.image = self.resizeImage(UIImage(data: data)!, scaledToWidth: self.comicImageView.bounds.width)
                             self.resizeImageView(self.comicImageView)
                             self.repositionLabel(self.comicTitleLabel, relativeToImageView: self.comicImageView)
-                            self.comicImageView.hidden = false
-                            self.comicTitleLabel.hidden = false
+                            self.comicImageView.isHidden = false
+                            self.comicTitleLabel.isHidden = false
                         }
                     }
                 }
@@ -51,39 +51,39 @@ class ComicViewController: UIViewController, UIGestureRecognizerDelegate {
     
     // MARK: - Sizing Helpers
 
-    func resizeImage(sourceImage:UIImage, scaledToWidth: CGFloat) -> UIImage {
+    func resizeImage(_ sourceImage:UIImage, scaledToWidth: CGFloat) -> UIImage {
         let oldWidth = sourceImage.size.width
         let scaleFactor = scaledToWidth / oldWidth
         
         let newHeight = sourceImage.size.height * scaleFactor
         let newWidth = oldWidth * scaleFactor
         
-        UIGraphicsBeginImageContext(CGSizeMake(newWidth, newHeight))
-        sourceImage.drawInRect(CGRectMake(0, 0, newWidth, newHeight))
+        UIGraphicsBeginImageContext(CGSize(width: newWidth, height: newHeight))
+        sourceImage.draw(in: CGRect(x: 0, y: 0, width: newWidth, height: newHeight))
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return newImage
+        return newImage!
     }
     
-    func resizeImageView(imageView: UIImageView) -> Void {
+    func resizeImageView(_ imageView: UIImageView) -> Void {
         var frame = imageView.frame
         frame.size.height = (imageView.image?.size.height)!
         imageView.frame = frame
     }
     
-    func repositionLabel(label: UILabel, relativeToImageView: UIImageView) -> Void {
+    func repositionLabel(_ label: UILabel, relativeToImageView: UIImageView) -> Void {
         var frame = label.frame
-        frame.origin.y = CGRectGetMaxY(relativeToImageView.frame) + 20
+        frame.origin.y = relativeToImageView.frame.maxY + 20
         label.frame = frame
     }
     
     // MARK: - Actions
 
-    @IBAction func showAltText(gesture: UIGestureRecognizer) -> Void {
-        if gesture.state == .Began {
-            let alertController = UIAlertController(title: comic?.safe_title, message: comic?.alt, preferredStyle: .Alert)
-            alertController.addAction(UIAlertAction(title: "Dismiss", style: .Cancel, handler: { _ in }))
-            presentViewController(alertController, animated: true, completion: nil)
+    @IBAction func showAltText(_ gesture: UIGestureRecognizer) -> Void {
+        if gesture.state == .began {
+            let alertController = UIAlertController(title: comic?.safe_title, message: comic?.alt, preferredStyle: .alert)
+            alertController.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: { _ in }))
+            present(alertController, animated: true, completion: nil)
         }
     }
     
