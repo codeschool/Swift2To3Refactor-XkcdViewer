@@ -15,7 +15,6 @@ class ComicViewController: UIViewController, UIGestureRecognizerDelegate {
     @IBOutlet var longPressGesture: UILongPressGestureRecognizer!
     
     var comic: Comic?
-    var comicImage: UIImage?
   
     // MARK: - View Controller Lifecycle
 
@@ -34,8 +33,7 @@ class ComicViewController: UIViewController, UIGestureRecognizerDelegate {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) {
                     if let data = NSData(contentsOfURL: url) {
                         dispatch_async(dispatch_get_main_queue()) {
-                            self.comicImage = UIImage(data: data)!
-                            self.comicImageView.image = self.resizeImage(self.comicImage!, scaledToWidth: self.comicImageView.bounds.width)
+                            self.comicImageView.image = self.resizeImage(UIImage(data: data)!, scaledToWidth: self.comicImageView.bounds.width)
                             self.resizeImageView(self.comicImageView)
                             self.repositionLabel(self.comicTitleLabel, relativeToImageView: self.comicImageView)
                             self.comicImageView.hidden = false
